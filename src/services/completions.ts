@@ -3529,10 +3529,6 @@ function getCompletionData(
 
     /* Mutates `symbols` and `symbolToOriginInfoMap`. */
     function collectObjectLiteralMethodSymbols(members: Symbol[], enclosingDeclaration: ObjectLiteralExpression): void {
-        // TODO: support JS files.
-        if (isInJSFile(location)) {
-            return;
-        }
         members.forEach(member => {
             if (!isObjectLiteralMethodSymbol(member)) {
                 return;
@@ -5173,4 +5169,3 @@ function toUpperCharCode(charCode: number) {
     }
     return charCode;
 }
-
