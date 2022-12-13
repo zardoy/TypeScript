@@ -1,5 +1,6 @@
 import {
     __String,
+    insertSorted as _insertSorted,
     addToSeen,
     append,
     BinaryExpression,
@@ -115,7 +116,6 @@ import {
     ImportTypeNode,
     IncompleteCompletionsCache,
     IndexedAccessTypeNode,
-    insertSorted,
     InternalSymbolName,
     isAbstractConstructorSymbol,
     isArrowFunction,
@@ -357,6 +357,11 @@ import {
     walkUpParenthesizedExpressions,
 } from "./_namespaces/ts";
 import { StringCompletions } from "./_namespaces/ts.Completions";
+
+const insertSorted = (arr: any[], item: any, compare: any, allowDuplicates?: boolean) => {
+    if (allowDuplicates) arr.push(item);
+    else return _insertSorted(arr as any, item, compare);
+};
 
 // Exported only for tests
 /** @internal */
@@ -911,7 +916,8 @@ function completionInfoFromData(
         importStatementCompletion,
         recommendedCompletion,
         symbolToOriginInfoMap,
-        symbolToSortTextMap,
+        // this patch is for vscode, which is on node16
+        (Object as any).fromEntries(Object.entries(symbolToSortTextMap).map(([key], i) => [key, i.toString().padStart(4, "0")])), // up to 9999 suggestions
         isJsxIdentifierExpected,
         isRightOfOpenTag,
     );
@@ -2089,7 +2095,7 @@ export function getCompletionEntriesFromSymbols(
         }
 
         const { name, needsConvertPropertyAccess } = info;
-        const originalSortText = symbolToSortTextMap?.[getSymbolId(symbol)] ?? SortText.LocationPriority;
+        const originalSortText = symbolToSortTextMap?.[getSymbolId(symbol)] ?? i.toString().padStart(4, "0") as SortText;
         const sortText = (isDeprecated(symbol, typeChecker) ? SortText.Deprecated(originalSortText) : originalSortText);
         const entry = createCompletionEntry(
             symbol,
@@ -5173,4 +5179,3 @@ function toUpperCharCode(charCode: number) {
     }
     return charCode;
 }
-
