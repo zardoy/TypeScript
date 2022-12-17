@@ -1484,6 +1484,8 @@ function createCompletionEntry(
         isPackageJsonImport: originIsPackageJsonImport(origin) || undefined,
         isImportStatementCompletion: !!importStatementCompletion || undefined,
         data,
+        //@ts-expect-error for plugins API
+        symbol
     };
 }
 
@@ -5215,4 +5217,3 @@ function toUpperCharCode(charCode: number) {
     }
     return charCode;
 }
-
