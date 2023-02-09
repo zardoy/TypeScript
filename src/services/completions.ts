@@ -160,6 +160,7 @@ import {
     isImportKeyword,
     isImportSpecifier,
     isInComment,
+    isInferTypeNode,
     isInitializedProperty,
     isInJSFile,
     isInRightSideOfInternalImportEqualsDeclaration,
@@ -2130,17 +2131,21 @@ export function getCompletionEntriesFromSymbols(
             }
 
             if (parameterDeclaration) {
+                const isTypeParameter = !isParameter(parameterDeclaration);
                 // Filter out parameters from their own initializers
                 // `function f(a = /* no 'a' here */) { }`
-                if (symbol.valueDeclaration === parameterDeclaration) {
+                if ((isTypeParameter ? symbol.declarations?.[0] : symbol.valueDeclaration) === parameterDeclaration) {
                     return false;
                 }
                 // Filter out parameters from other parameters' initializers
-                // `function f(a = /* no 'b' here */, b) { }`
-                const parameters = parameterDeclaration.parent.parameters;
-                const currentParamIdx = parameters.indexOf(parameterDeclaration);
-                if (parameters.slice(currentParamIdx).some((p) => symbol.valueDeclaration === p)) {
-                    return false;
+                // `function f(a = /* no 'b' here */, b) { }` or in case of type parameters:
+                // `function f<T = /* no 'T' here */>(a: T) { }`
+                const parameters = isParameter(parameterDeclaration) ? parameterDeclaration.parent.parameters : isInferTypeNode(parameterDeclaration.parent) ? undefined : parameterDeclaration.parent.typeParameters;
+                if (parameters) {
+                    const currentParamIdx = parameters.indexOf(parameterDeclaration as TypeParameterDeclaration & ParameterDeclaration);
+                    if (parameters.slice(currentParamIdx).some((p) => (isTypeParameter ? symbol.declarations?.[0] : symbol.valueDeclaration) === p)) {
+                        return false;
+                    }
                 }
             }
 
@@ -5112,11 +5117,11 @@ function getVariableDeclaration(property: Node): VariableDeclaration | undefined
     return variableDeclaration as VariableDeclaration | undefined;
 }
 
-function getParameterDeclaration(contextToken: Node | undefined): ParameterDeclaration | undefined {
+function getParameterDeclaration(contextToken: Node | undefined): ParameterDeclaration | TypeParameterDeclaration | undefined {
     if (!contextToken) return;
-    const parameter = findAncestor(contextToken, node => isParameter(node));
+    const parameter = findAncestor(contextToken, node => isParameter(node) || isTypeParameterDeclaration(node));
 
-    return parameter as ParameterDeclaration | undefined;
+    return parameter as ParameterDeclaration | TypeParameterDeclaration | undefined;
 }
 
 function isArrowFunctionBody(node: Node) {
