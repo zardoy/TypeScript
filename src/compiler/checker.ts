@@ -31199,6 +31199,28 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
+    // function isPropertyUsedBeforeDeclaration(prop: Symbol, node: Node) {
+    //     const { valueDeclaration } = prop;
+    //     if (!valueDeclaration || getSourceFileOfNode(node).isDeclarationFile) {
+    //         return;
+    //     }
+
+    //     if (isInPropertyInitializerOrClassStaticBlock(node)
+    //         && !isOptionalPropertyDeclaration(valueDeclaration)
+    //         && !(isAccessExpression(node) && isAccessExpression(node.expression))
+    //         && !isBlockScopedNameDeclaredBeforeUse(valueDeclaration, right)
+    //         && !(isMethodDeclaration(valueDeclaration) && getCombinedModifierFlags(valueDeclaration) & ModifierFlags.Static)
+    //         && (compilerOptions.useDefineForClassFields || !isPropertyDeclaredInAncestorClass(prop))) {
+    //             return true;
+    //     }
+    //     else if (valueDeclaration.kind === SyntaxKind.ClassDeclaration &&
+    //         node.parent.kind !== SyntaxKind.TypeReference &&
+    //         !(valueDeclaration.flags & NodeFlags.Ambient) &&
+    //         !isBlockScopedNameDeclaredBeforeUse(valueDeclaration, right)) {
+    //             return true;
+    //     }
+    // }
+
     function isInPropertyInitializerOrClassStaticBlock(node: Node): boolean {
         return !!findAncestor(node, node => {
             switch (node.kind) {
